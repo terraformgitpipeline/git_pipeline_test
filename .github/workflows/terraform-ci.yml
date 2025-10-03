@@ -38,3 +38,26 @@ jobs:
 
       - name: Terraform Plan (no apply)
         run: terraform plan -input=false -no-color -out=tfplan
+
+      # ------------------------------
+      # Step 3: Security & Compliance
+      # ------------------------------
+
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1
+        with:
+          args: .
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+
+      - name: Convert plan to JSON
+        run: terraform show -json tfplan > tfplan.json
+
+      - name: Install terraform-compliance
+        run: pip install terraform-compliance
+
+      - name: Run terraform-compliance
+        run: terraform-compliance -p tfplan.json -f tests/
