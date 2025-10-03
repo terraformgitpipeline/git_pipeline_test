@@ -1,0 +1,40 @@
+name: Terraform CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  hello:
+    name: Hello — quick smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Say Hello
+        run: echo "Hello from GitHub Actions — pipeline triggered for $GITHUB_REPOSITORY"
+
+  terraform-plan:
+    name: Terraform Init & Plan
+    runs-on: ubuntu-latest
+    needs: hello
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Terraform CLI
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: '1.6.0'   # change to the version you want/use
+
+      - name: Terraform Init
+        run: terraform init -input=false
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan (no apply)
+        run: terraform plan -input=false -no-color -out=tfplan
